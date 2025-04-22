@@ -1,66 +1,95 @@
-## Foundry
+# MissingOnez NFT Contracts
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This repository contains the smart contracts for the MissingOnez NFT collection, built with Foundry.
 
-Foundry consists of:
+## Prerequisites
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- [Foundry](https://book.getfoundry.sh/getting-started/installation) (Forge, Cast, Anvil)
+- Solidity ^0.8.20
 
-## Documentation
+## Key Contracts
 
-https://book.getfoundry.sh/
+- **MissingOnez.sol**: Main NFT contract implementing ERC721 with enumerable and burnable extensions.
+- **RandomPoolId.sol**: Utility contract for random ID assignment.
+- **M1ZPrices.sol**: Handles pricing logic for minting tokens.
+- **Withdraw.sol**: Handles ETH and token withdrawal functionality.
+- **StringUtils.sol**: Utility functions for string manipulation.
 
-## Usage
+## Getting Started
 
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
+1. Clone the repository:
 
 ```shell
-$ forge test
+git clone <repository-url>
+cd smartcontracts
 ```
 
-### Format
+2. Install dependencies:
 
 ```shell
-$ forge fmt
+forge install
 ```
 
-### Gas Snapshots
+3. Build the contracts:
 
 ```shell
-$ forge snapshot
+forge build
 ```
 
-### Anvil
+4. Run tests:
 
 ```shell
-$ anvil
+forge test
 ```
 
-### Deploy
+## Environment Setup
+
+Copy the example environment file and fill in your values:
 
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+cp .env.example .env
 ```
 
-### Cast
+Edit the `.env` file with your deployment configuration:
+
+- Private key for deployment
+- Royalty recipient address
+- Unit price for minting
+- Min and max IDs for the token range
+- Unrevealed metadata path
+- RPC URLs for target networks
+
+## Deployment
+
+To deploy to a network:
 
 ```shell
-$ cast <subcommand>
+# Load environment variables
+source .env
+
+# Deploy to a specific network
+forge script script/DeployMissingOnez.s.sol:DeployMissingOnez --rpc-url $AVALANCHE_RPC_URL --broadcast --verify
 ```
 
-### Help
+## Contract Features
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+### Minting
+
+- Free minting via CROSS_CHAIN_ROLE (for cross-chain transfers or giveaways)
+- Paid minting with quantity-based discounts
+- Batch minting (up to MAX_BATCH_MINT = 10)
+
+### Token Reveal
+
+- Manual reveal by token owners
+- Auto-reveal functionality for admins
+- Separate metadata paths for revealed and unrevealed tokens
+
+### Cross-Chain
+
+- Support for cross-chain transfers via CCIP
+- Burn and mint mechanism for cross-chain operations
+
+## License
+
+This project is licensed under the MIT License.
