@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 abstract contract Withdraw is Ownable {
     error FailedToWithdrawEth(address owner, address target, uint256 value);
@@ -13,7 +13,7 @@ abstract contract Withdraw is Ownable {
 
     function withdraw(address beneficiary) external onlyOwner {
         uint256 amount = address(this).balance;
-        (bool sent, ) = beneficiary.call{value: amount}('');
+        (bool sent,) = beneficiary.call{value: amount}("");
         if (!sent) revert FailedToWithdrawEth(_msgSender(), beneficiary, amount);
     }
 
@@ -23,7 +23,9 @@ abstract contract Withdraw is Ownable {
     }
 
     function withdrawERC721(address erc721) external onlyOwner {
-        require(IERC721(erc721).balanceOf(address(this)) > 0, 'Withdraw: contract does not own any ERC721');
-        IERC721(erc721).transferFrom(address(this), _msgSender(), IERC721Enumerable(erc721).tokenOfOwnerByIndex(address(this), 0));
+        require(IERC721(erc721).balanceOf(address(this)) > 0, "Withdraw: contract does not own any ERC721");
+        IERC721(erc721).transferFrom(
+            address(this), _msgSender(), IERC721Enumerable(erc721).tokenOfOwnerByIndex(address(this), 0)
+        );
     }
 }

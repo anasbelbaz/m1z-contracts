@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import '@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol';
+import "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 
-import './libs/chainlink/LinkTokenInterface.sol';
-import './utils/M1ZPrices.sol';
-import './utils/Withdraw.sol';
-import './MissingOnez.sol';
+import "./libs/chainlink/LinkTokenInterface.sol";
+import "./utils/M1ZPrices.sol";
+import "./utils/Withdraw.sol";
+import "./MissingOnez.sol";
 
 contract M1ZSourceSender is M1ZPrices, Withdraw {
     address public i_router;
@@ -21,13 +21,10 @@ contract M1ZSourceSender is M1ZPrices, Withdraw {
     mapping(uint64 => bool) public allowedDestinations;
     bool public canMintCrossChain;
 
-    constructor(
-        address initialOwner,
-        address router,
-        address link,
-        uint256 _unitPrice,
-        address m1zAddress
-    ) M1ZPrices(_unitPrice) Withdraw(initialOwner) {
+    constructor(address initialOwner, address router, address link, uint256 _unitPrice, address m1zAddress)
+        M1ZPrices(_unitPrice)
+        Withdraw(initialOwner)
+    {
         i_router = router;
         i_link = link;
         m1z = MissingOnez(m1zAddress);
@@ -39,12 +36,11 @@ contract M1ZSourceSender is M1ZPrices, Withdraw {
     // FEES GETTER
     //////////////////////////////////////////
 
-    function getMintFee(
-        uint256 amount,
-        uint64 destinationChainSelector,
-        address receiver,
-        PayFeesIn payFeesIn
-    ) external view returns (uint256) {
+    function getMintFee(uint256 amount, uint64 destinationChainSelector, address receiver, PayFeesIn payFeesIn)
+        external
+        view
+        returns (uint256)
+    {
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(receiver),
             data: abi.encodeCall(MissingOnez.mint, (amount, _msgSender())),
@@ -86,11 +82,14 @@ contract M1ZSourceSender is M1ZPrices, Withdraw {
      * @param receiver Address of the destination EVM chain contract.
      * @param payFeesIn Whether to pay the fees in native or LINK currency
      */
-    function mint(uint256 amount, uint64 destinationChainSelector, address receiver, PayFeesIn payFeesIn) external payable {
-        require(allowedDestinations[destinationChainSelector], 'M1ZSourceSender: destination chain is not allowed');
-        require(canMintCrossChain, 'M1ZSourceSender: mint is not permitted from this chain to another chain');
-        require(amount > 0, 'M1ZSourceSender: must mint at least one');
-        require(amount <= maxBatch, 'M1ZSourceSender: cannot mint more than maxBatch at once');
+    function mint(uint256 amount, uint64 destinationChainSelector, address receiver, PayFeesIn payFeesIn)
+        external
+        payable
+    {
+        require(allowedDestinations[destinationChainSelector], "M1ZSourceSender: destination chain is not allowed");
+        require(canMintCrossChain, "M1ZSourceSender: mint is not permitted from this chain to another chain");
+        require(amount > 0, "M1ZSourceSender: must mint at least one");
+        require(amount <= maxBatch, "M1ZSourceSender: cannot mint more than maxBatch at once");
 
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(receiver),
@@ -101,17 +100,20 @@ contract M1ZSourceSender is M1ZPrices, Withdraw {
         });
 
         uint256 price = getPrice(amount);
-        require(msg.value >= price, 'M1ZSourceSender: did not send enough native tokens to pay');
+        require(msg.value >= price, "M1ZSourceSender: did not send enough native tokens to pay");
 
         uint256 fee = IRouterClient(i_router).getFee(destinationChainSelector, message);
         bytes32 messageId;
 
         if (payFeesIn == PayFeesIn.LINK) {
-            require(LinkTokenInterface(i_link).balanceOf(address(this)) >= fee, 'M1ZSourceSender: contract does not have enough LINK');
+            require(
+                LinkTokenInterface(i_link).balanceOf(address(this)) >= fee,
+                "M1ZSourceSender: contract does not have enough LINK"
+            );
             LinkTokenInterface(i_link).approve(i_router, fee);
             messageId = IRouterClient(i_router).ccipSend(destinationChainSelector, message);
         } else {
-            require(msg.value >= price + fee, 'M1ZSourceSender: did not send enough native tokens to cover the fees');
+            require(msg.value >= price + fee, "M1ZSourceSender: did not send enough native tokens to cover the fees");
             messageId = IRouterClient(i_router).ccipSend{value: fee}(destinationChainSelector, message);
         }
 
@@ -132,13 +134,15 @@ contract M1ZSourceSender is M1ZPrices, Withdraw {
         address receiver,
         PayFeesIn payFeesIn
     ) external payable {
-        require(allowedDestinations[destinationChainSelector], 'M1ZSourceSender: destination chain is not allowed');
-        require(tokenIds.length == ids.length, 'M1ZSourceSender: arrays lengths do not match');
-        require(tokenIds.length > 0, 'M1ZSourceSender: must send at least 1 M1Z');
-        require(tokenIds.length <= maxBatch, 'M1ZSourceSender: cannot transfer more than maxBatch at once');
+        require(allowedDestinations[destinationChainSelector], "M1ZSourceSender: destination chain is not allowed");
+        require(tokenIds.length == ids.length, "M1ZSourceSender: arrays lengths do not match");
+        require(tokenIds.length > 0, "M1ZSourceSender: must send at least 1 M1Z");
+        require(tokenIds.length <= maxBatch, "M1ZSourceSender: cannot transfer more than maxBatch at once");
 
-        for (uint i = 0; i < tokenIds.length; i++) {
-            require(m1z.revealedTokenIds(tokenIds[i]), 'M1ZSourceSender: cannot transfer to another chain if not revealed');
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            require(
+                m1z.revealedTokenIds(tokenIds[i]), "M1ZSourceSender: cannot transfer to another chain if not revealed"
+            );
             m1z.burn(tokenIds[i]);
         }
 
@@ -154,11 +158,14 @@ contract M1ZSourceSender is M1ZPrices, Withdraw {
 
         bytes32 messageId;
         if (payFeesIn == PayFeesIn.LINK) {
-            require(LinkTokenInterface(i_link).balanceOf(address(this)) >= fee, 'M1ZSourceSender: contract does not have enough LINK');
+            require(
+                LinkTokenInterface(i_link).balanceOf(address(this)) >= fee,
+                "M1ZSourceSender: contract does not have enough LINK"
+            );
             LinkTokenInterface(i_link).approve(i_router, fee);
             messageId = IRouterClient(i_router).ccipSend(destinationChainSelector, message);
         } else {
-            require(msg.value >= fee, 'M1ZSourceSender: did not send enough native tokens to cover the fees');
+            require(msg.value >= fee, "M1ZSourceSender: did not send enough native tokens to cover the fees");
             messageId = IRouterClient(i_router).ccipSend{value: fee}(destinationChainSelector, message);
         }
 
@@ -178,7 +185,7 @@ contract M1ZSourceSender is M1ZPrices, Withdraw {
     }
 
     function setAllowedDestinations(uint64[] calldata _allowedDestinations, bool isAllowed) external onlyOwner {
-        for (uint i = 0; i < _allowedDestinations.length; i++) {
+        for (uint256 i = 0; i < _allowedDestinations.length; i++) {
             allowedDestinations[_allowedDestinations[i]] = isAllowed;
         }
     }

@@ -1,18 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import '@openzeppelin/contracts/access/AccessControl.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
-import '@openzeppelin/contracts/token/common/ERC2981.sol';
-import '@openzeppelin/contracts/utils/Strings.sol';
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
-import './utils/RandomPoolId.sol';
-import './utils/M1ZPrices.sol';
-import './utils/Withdraw.sol';
-import './utils/StringUtils.sol';
+import "./utils/RandomPoolId.sol";
+import "./utils/M1ZPrices.sol";
+import "./utils/Withdraw.sol";
+import "./utils/StringUtils.sol";
 
-contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnable, ERC721Enumerable, ERC2981, AccessControl {
+contract MissingOnez is
+    RandomPoolId,
+    M1ZPrices,
+    Withdraw,
+    ERC721,
+    ERC721Burnable,
+    ERC721Enumerable,
+    ERC2981,
+    AccessControl
+{
     using Strings for uint256;
     using StringUtils for string;
 
@@ -22,7 +31,7 @@ contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnabl
     event SentCrossChain(uint256 timestamp, address sender, uint256[] tokenIds, uint256 destChainId);
     event ReceivedCrossChain(uint256 timestamp, address sender, uint256[] tokenIds, uint256[] ids, uint256 fromChainId);
 
-    bytes32 public constant CROSS_CHAIN_ROLE = keccak256('CROSS_CHAIN_ROLE');
+    bytes32 public constant CROSS_CHAIN_ROLE = keccak256("CROSS_CHAIN_ROLE");
 
     uint96 public constant MAX_BATCH_MINT = 10;
     uint96 public constant ROYALTIES_VALUE = 500;
@@ -46,8 +55,8 @@ contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnabl
         uint256 mintMinId,
         uint256 mintMaxId,
         string memory _unrevealedPath
-    ) RandomPoolId(mintMinId, mintMaxId) M1ZPrices(_unitPrice) Withdraw(initialOwner) ERC721('Missing Onez', 'M1Z') {
-        baseURI = 'https://cdn.madskullz.io/missingonez/metadata/';
+    ) RandomPoolId(mintMinId, mintMaxId) M1ZPrices(_unitPrice) Withdraw(initialOwner) ERC721("Missing Onez", "M1Z") {
+        baseURI = "https://cdn.madskullz.io/missingonez/metadata/";
         royaltyRecipient = _royaltyRecipient;
         unrevealedPath = _unrevealedPath;
         _setDefaultRoyalty(_royaltyRecipient, ROYALTIES_VALUE);
@@ -70,7 +79,7 @@ contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnabl
      * @param to sender of the cross-chain call.
      */
     function mint(uint256 amount, address to) external onlyRole(CROSS_CHAIN_ROLE) {
-        require(isMintOpen, 'M1Z: mint is not open');
+        require(isMintOpen, "M1Z: mint is not open");
         randomMint(amount, to);
     }
 
@@ -80,17 +89,17 @@ contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnabl
      * @param amount quantity of M1Z to mint.
      */
     function paidMint(uint256 amount) external payable {
-        require(isMintOpen, 'M1Z: mint is not open');
+        require(isMintOpen, "M1Z: mint is not open");
         uint256 price = getPrice(amount);
 
-        require(msg.value >= price, 'M1Z: did not send enough native tokens');
+        require(msg.value >= price, "M1Z: did not send enough native tokens");
         randomMint(amount, _msgSender());
     }
 
     function randomMint(uint256 amount, address to) internal {
-        require(amount > 0, 'M1Z: must mint at least one');
-        require(amount <= MAX_BATCH_MINT, 'M1Z: cannot mint more than MAX_BATCH_MINT at once');
-        require(amount <= supplyLeft(), 'M1Z: not enough supply left to mint');
+        require(amount > 0, "M1Z: must mint at least one");
+        require(amount <= MAX_BATCH_MINT, "M1Z: cannot mint more than MAX_BATCH_MINT at once");
+        require(amount <= supplyLeft(), "M1Z: not enough supply left to mint");
 
         for (uint256 i = 0; i < amount; i++) {
             uint256 tokenId = currentSupply + _minId;
@@ -114,8 +123,8 @@ contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnabl
         address to,
         uint256 fromChainId
     ) external onlyRole(CROSS_CHAIN_ROLE) {
-        require(tokenIds.length == ids.length, 'M1Z: arrays lengths do not match');
-        require(tokenIds.length > 0, 'M1Z: must transfer at least one');
+        require(tokenIds.length == ids.length, "M1Z: arrays lengths do not match");
+        require(tokenIds.length > 0, "M1Z: must transfer at least one");
         for (uint256 i = 0; i < tokenIds.length; i++) {
             _safeMint(to, tokenIds[i]);
             _tokenIdMap[tokenIds[i]] = ids[i];
@@ -141,7 +150,7 @@ contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnabl
 
     function reveal(uint256 tokenId) external {
         _checkAuthorized(_ownerOf(tokenId), _msgSender(), tokenId);
-        require(!revealedTokenIds[tokenId], 'M1Z: already revealed');
+        require(!revealedTokenIds[tokenId], "M1Z: already revealed");
 
         uint256 id = _randomize();
         _tokenIdMap[tokenId] = id;
@@ -151,7 +160,7 @@ contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnabl
     }
 
     function autoReveal(uint256 tokenId) external onlyOwner {
-        require(!revealedTokenIds[tokenId], 'M1Z: already revealed');
+        require(!revealedTokenIds[tokenId], "M1Z: already revealed");
 
         uint256 id = _randomize();
         _tokenIdMap[tokenId] = id;
@@ -172,10 +181,9 @@ contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnabl
         _requireOwned(tokenId);
 
         if (revealedTokenIds[tokenId]) {
-            return
-                bytes(baseURI).length > 0
-                    ? string(abi.encodePacked(baseURI, _tokenIdMap[tokenId].toString().padStart(4, '0'), '.json'))
-                    : '';
+            return bytes(baseURI).length > 0
+                ? string(abi.encodePacked(baseURI, _tokenIdMap[tokenId].toString().padStart(4, "0"), ".json"))
+                : "";
         } else {
             return string(abi.encodePacked(baseURI, unrevealedPath));
         }
@@ -210,7 +218,11 @@ contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnabl
     // MANDATORY OVERRIDES
     //////////////////////////////////////////
 
-    function _update(address to, uint256 tokenId, address auth) internal override(ERC721, ERC721Enumerable) returns (address) {
+    function _update(address to, uint256 tokenId, address auth)
+        internal
+        override(ERC721, ERC721Enumerable)
+        returns (address)
+    {
         return super._update(to, tokenId, auth);
     }
 
@@ -219,7 +231,12 @@ contract MissingOnez is RandomPoolId, M1ZPrices, Withdraw, ERC721, ERC721Burnabl
     }
 
     // The following functions are overrides required by Solidity.
-    function supportsInterface(bytes4 interfaceId) public view override(ERC2981, ERC721, ERC721Enumerable, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC2981, ERC721, ERC721Enumerable, AccessControl)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 }

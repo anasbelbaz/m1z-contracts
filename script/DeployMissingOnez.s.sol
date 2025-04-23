@@ -15,7 +15,7 @@ contract DeployMissingOnez is Script {
         uint256 minId = 1;
         uint256 maxId = 1001;
         string memory unrevealedPath = "unrevealed.json";
-        
+
         console2.log("Deploying MissingOnez with parameters:");
         console2.log("Deployer:", deployer);
         console2.log("Royalty Recipient:", royaltyRecipient);
@@ -23,20 +23,13 @@ contract DeployMissingOnez is Script {
         console2.log("Min ID:", minId);
         console2.log("Max ID:", maxId);
         console2.log("Unrevealed Path:", unrevealedPath);
-        
+
         vm.startBroadcast(deployerPrivateKey);
-        
-        MissingOnez m1z = new MissingOnez(
-            deployer,
-            royaltyRecipient,
-            unitPrice,
-            minId,
-            maxId,
-            unrevealedPath
-        );
-        
+
+        MissingOnez m1z = new MissingOnez(deployer, royaltyRecipient, unitPrice, minId, maxId, unrevealedPath);
+
         console2.log("MissingOnez deployed at:", address(m1z));
-        
+
         vm.stopBroadcast();
     }
-} 
+}

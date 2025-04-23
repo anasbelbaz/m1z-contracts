@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import '@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol';
-import '@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol';
+import "@openzeppelin/contracts/access/Ownable.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
+import "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 
-import {MissingOnez} from './MissingOnez.sol';
+import {MissingOnez} from "./MissingOnez.sol";
 
 contract M1ZDestinationMinter is CCIPReceiver, Ownable {
     event MintCallSuccessfull();
@@ -19,7 +19,7 @@ contract M1ZDestinationMinter is CCIPReceiver, Ownable {
     }
 
     function _ccipReceive(Client.Any2EVMMessage memory message) internal override {
-        require(allowedSources[message.sourceChainSelector], 'M1ZDestinationMinter: source chain not allowed');
+        require(allowedSources[message.sourceChainSelector], "M1ZDestinationMinter: source chain not allowed");
         (bool success, bytes memory data) = address(m1z).call(message.data);
 
         if (!success) {
@@ -42,7 +42,7 @@ contract M1ZDestinationMinter is CCIPReceiver, Ownable {
     }
 
     function setAllowedSources(uint64[] calldata _allowedSources, bool isAllowed) external onlyOwner {
-        for (uint i = 0; i < _allowedSources.length; i++) {
+        for (uint256 i = 0; i < _allowedSources.length; i++) {
             allowedSources[_allowedSources[i]] = isAllowed;
         }
     }

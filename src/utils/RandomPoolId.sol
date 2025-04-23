@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Context} from '@openzeppelin/contracts/utils/Context.sol';
+import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 
 abstract contract RandomPoolId is Context {
     // Minimum value of the ids range
@@ -20,7 +20,7 @@ abstract contract RandomPoolId is Context {
     }
 
     function _randomize() internal virtual returns (uint256) {
-        require(_rangeLength > 0, 'Randomize: cannot pick another id as they where all picked already');
+        require(_rangeLength > 0, "Randomize: cannot pick another id as they where all picked already");
         uint256 randomIndex = _randomNumber(0, _rangeLength);
         uint256 id = _swappedIds[randomIndex];
 
@@ -46,7 +46,7 @@ abstract contract RandomPoolId is Context {
      * @param max max range for the random number.
      */
     function _randomNumber(uint256 min, uint256 max) internal view virtual returns (uint256) {
-        require(max >= min, 'RandomNumber: invalid range');
+        require(max >= min, "RandomNumber: invalid range");
         uint256 randNumber = uint256(
             keccak256(abi.encodePacked(block.prevrandao, block.timestamp, _msgSender(), blockhash(block.number)))
         ) % (max - min + 1);
