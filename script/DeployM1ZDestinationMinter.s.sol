@@ -12,8 +12,8 @@ contract DeployM1ZDestinationMinter is Script {
         address deployer = vm.addr(deployerPrivateKey);
 
         // Get configuration from environment variables or use defaults
-        address routerAddress = 0xded0EE188Fe8F1706D9049e29C82081A5ebEcb2F; // Default CORE testnet router
-        address m1zAddress = 0xAba2C9ec10347e16207A51b006C715578A51aB2E;
+        address routerAddress = 0xF694E193200268f9a4868e4Aa017A0118C9a8177; // Default router
+        address m1zAddress = 0x943DB52BCa8f24929281B05f4fE9C53e0a2b5c93;
 
         console2.log("Deploying M1ZDestinationMinter with parameters:");
         console2.log("Deployer:", deployer);

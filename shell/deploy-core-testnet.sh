@@ -15,12 +15,6 @@ echo "Deploying to CORE Testnet ($CHAIN_ID) at $RPC_URL"
 echo "Deploying MissingOnez contract..."
 forge script script/DeployMissingOnez.s.sol:DeployMissingOnez --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --verify
 
-# Get the deployed contract address
-# You would typically export this from the deployment output
-echo "Please enter the deployed MissingOnez address:"
-read M1Z_ADDRESS
-export M1Z_ADDRESS=$M1Z_ADDRESS
-
 # Deploy M1ZSourceSender contract
 echo "Deploying M1ZSourceSender contract..."
 forge script script/DeployM1ZSourceSender.s.sol:DeployM1ZSourceSender --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --verify

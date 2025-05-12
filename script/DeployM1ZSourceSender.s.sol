@@ -12,8 +12,8 @@ contract DeployM1ZSourceSender is Script {
         address deployer = vm.addr(deployerPrivateKey);
 
         // Get configuration from environment variables or use defaults
-        address routerAddress = 0xded0EE188Fe8F1706D9049e29C82081A5ebEcb2F; // Default CORE testnet router
-        address linkAddress = 0x6C475841d1D7871940E93579E5DBaE01634e17aA; // Default CORE testnet LINK
+        address routerAddress = 0xF694E193200268f9a4868e4Aa017A0118C9a8177; // Default router
+        address linkAddress = 0x6C475841d1D7871940E93579E5DBaE01634e17aA; // Default LINK
         uint256 unitPrice = 100000000000000000; // 0.1 ETH default
         address m1zAddress = 0xAba2C9ec10347e16207A51b006C715578A51aB2E;
 
